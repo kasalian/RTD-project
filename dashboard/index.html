@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dadinkowa HPP - Real Time Display</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #07111f;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            height: 13vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #0b1c31;
+            border-bottom: 2px solid #1f3b5d;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 3.2vw;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            margin: 6px 0 0;
+            font-size: 1.3vw;
+            color: #a9bfd6;
+            letter-spacing: 3px;
+        }
+
+        .main {
+            height: 77vh;
+            padding: 2vh 2vw;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 38% 62%;
+            gap: 1.5vh 1.5vw;
+        }
+
+        .card {
+            background: #0d2138;
+            border: 1px solid #254764;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .total {
+            grid-column: 1 / 3;
+        }
+
+        .label {
+            font-size: 1.5vw;
+            color: #9fb6cc;
+            letter-spacing: 2px;
+        }
+
+        .total-value {
+            font-size: 6vw;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .unit-grid {
+            grid-column: 1 / 3;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5vw;
+        }
+
+        .unit {
+            padding: 1vw;
+        }
+
+        .unit-name {
+            font-size: 2vw;
+            letter-spacing: 2px;
+        }
+
+        .unit-value {
+            font-size: 4vw;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .status {
+            font-size: 1.5vw;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .generating {
+            color: #35d07f;
+        }
+
+        .shutdown {
+            color: #ff5b5b;
+        }
+
+        .footer {
+            height: 10vh;
+            background: #0b1c31;
+            border-top: 2px solid #1f3b5d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 3vw;
+        }
+
+        .system {
+            font-size: 1.3vw;
+            font-weight: bold;
+        }
+
+        .online {
+            color: #35d07f;
+        }
+
+        .offline {
+            color: #ff5b5b;
+        }
+
+        .update {
+            font-size: 1.2vw;
+            color: #a9bfd6;
+        }
+
+        .metrics {
+            grid-column: 1 / 3;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5vw;
+        }
+
+        .metric-value {
+            font-size: 2.4vw;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+    <h1>DADINKOWA HPP</h1>
+    <p>REAL TIME DISPLAY</p>
+</header>
+
+<main class="main">
+
+    <section class="card total">
+        <div class="label">TOTAL GENERATION</div>
+        <div class="total-value" id="totalPower">--.-- MW</div>
+    </section>
+
+    <section class="unit-grid">
+
+        <div class="card unit">
+            <div class="unit-name">UNIT 1</div>
+            <div class="unit-value" id="unit1Power">--.-- MW</div>
+            <div class="status generating" id="unit1Status">
+                CONNECTING...
+            </div>
+        </div>
+
+        <div class="card unit">
+            <div class="unit-name">UNIT 2</div>
+            <div class="unit-value" id="unit2Power">--.-- MW</div>
+            <div class="status generating" id="unit2Status">
+                CONNECTING...
+            </div>
+        </div>
+
+    </section>
+
+    <section class="metrics">
+
+        <div class="card">
+            <div class="label">GRID FREQUENCY</div>
+            <div class="metric-value" id="frequency">-- Hz</div>
+        </div>
+
+        <div class="card">
+            <div class="label">GRID VOLTAGE</div>
+            <div class="metric-value" id="voltage">-- kV</div>
+        </div>
+
+        <div class="card">
+            <div class="label">UPSTREAM LEVEL</div>
+            <div class="metric-value" id="upstream">-- m</div>
+        </div>
+
+        <div class="card">
+            <div class="label">TAILRACE LEVEL</div>
+            <div class="metric-value" id="tailrace">-- m</div>
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="footer">
+
+    <div class="system">
+        ● <span id="systemStatus" class="online">SYSTEM ONLINE</span>
+    </div>
+
+    <div class="update">
+        Last Update: <span id="lastUpdate">--</span>
+    </div>
+
+</footer>
+
+<script>
+
+const API_URL = "/api/telemetry";
+
+async function updateDashboard() {
+
+    try {
+
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error("HTTP error");
+        }
+
+        const data = await response.json();
+
+        const values = data.values;
+
+        document.getElementById("unit1Power").textContent =
+            values.UNIT1_ACTIVE_POWER_MW.toFixed(2) + " MW";
+
+        document.getElementById("unit2Power").textContent =
+            values.UNIT2_ACTIVE_POWER_MW.toFixed(2) + " MW";
+
+        document.getElementById("totalPower").textContent =
+            values.TOTAL_ACTIVE_POWER_MW.toFixed(2) + " MW";
+
+        document.getElementById("frequency").textContent =
+            values.GRID_FREQUENCY_HZ.toFixed(2) + " Hz";
+
+        document.getElementById("voltage").textContent =
+            values.GRID_VOLTAGE_KV.toFixed(2) + " kV";
+
+        document.getElementById("upstream").textContent =
+            values.UPSTREAM_LEVEL_M.toFixed(2) + " m";
+
+        document.getElementById("tailrace").textContent =
+            values.TAILRACE_LEVEL_M.toFixed(2) + " m";
+
+        updateStatus(
+            "unit1Status",
+            values.UNIT1_STATUS
+        );
+
+        updateStatus(
+            "unit2Status",
+            values.UNIT2_STATUS
+        );
+
+        const timestamp = new Date(data.timestamp_utc);
+
+        document.getElementById("lastUpdate").textContent =
+            timestamp.toLocaleTimeString();
+
+        document.getElementById("systemStatus").textContent =
+            "SYSTEM ONLINE";
+
+        document.getElementById("systemStatus").className =
+            "online";
+
+    } catch (error) {
+
+        document.getElementById("systemStatus").textContent =
+            "SYSTEM OFFLINE";
+
+        document.getElementById("systemStatus").className =
+            "offline";
+    }
+}
+
+
+function updateStatus(elementId, status) {
+
+    const element = document.getElementById(elementId);
+
+    element.textContent = status.toUpperCase();
+
+    if (status.toLowerCase() === "generating") {
+
+        element.className = "status generating";
+
+    } else {
+
+        element.className = "status shutdown";
+    }
+}
+
+
+updateDashboard();
+
+setInterval(updateDashboard, 2000);
+
+</script>
+
+</body>
+</html>
