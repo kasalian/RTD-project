@@ -1,326 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dadinkowa HPP - Real Time Generation Board</title>
 
-    <title>Dadinkowa HPP - Real Time Display</title>
+<style>
+    :root {
+        --navy: #0b2149;
+        --navy-deep: #071633;
+        --red: #e0342c;
+        --green: #2fae5c;
+        --bg: #eef1f5;
+        --card-bg: #f7f9fb;
+        --card-border: #dde3ea;
+        --text-muted: #5b6b80;
+    }
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+    * { box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #07111f;
-            color: white;
-            height: 100vh;
-            overflow: hidden;
-        }
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+        background: var(--bg);
+        color: var(--navy);
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        .header {
-            height: 13vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: #0b1c31;
-            border-bottom: 2px solid #1f3b5d;
-        }
+    .page {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 1.5vh 1.5vw;
+        gap: 1.5vh;
+    }
 
-        .header h1 {
-            margin: 0;
-            font-size: 3.2vw;
-            letter-spacing: 2px;
-        }
+    /* ---------- Header ---------- */
+    .header {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.4vh 2vw;
+    }
 
-        .header p {
-            margin: 6px 0 0;
-            font-size: 1.3vw;
-            color: #a9bfd6;
-            letter-spacing: 3px;
-        }
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 1vw;
+    }
 
-        .main {
-            height: 77vh;
-            padding: 2vh 2vw;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 38% 62%;
-            gap: 1.5vh 1.5vw;
-        }
+    .brand-mark {
+        width: 4.2vw;
+        height: 4.2vw;
+        min-width: 52px;
+        min-height: 52px;
+        background: var(--red);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .card {
-            background: #0d2138;
-            border: 1px solid #254764;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+    .brand-mark svg { width: 62%; height: 62%; }
 
-        .total {
-            grid-column: 1 / 3;
-        }
+    .brand-name {
+        font-size: 1.3vw;
+        font-weight: 800;
+        line-height: 1.15;
+        color: var(--navy);
+        letter-spacing: 0.5px;
+    }
 
-        .label {
-            font-size: 1.5vw;
-            color: #9fb6cc;
-            letter-spacing: 2px;
-        }
+    .brand-name span {
+        display: block;
+        color: var(--red);
+        font-weight: 700;
+    }
 
-        .total-value {
-            font-size: 6vw;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+    .divider {
+        width: 1px;
+        height: 5vh;
+        background: #c7cfd9;
+        margin: 0 1.6vw;
+    }
 
-        .unit-grid {
-            grid-column: 1 / 3;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5vw;
-        }
+    .title-block { text-align: center; flex: 1; }
 
-        .unit {
-            padding: 1vw;
-        }
+    .title-block h1 {
+        margin: 0;
+        font-size: 3vw;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: var(--navy);
+    }
 
-        .unit-name {
-            font-size: 2vw;
-            letter-spacing: 2px;
-        }
+    .title-block .subtitle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1vw;
+        margin-top: 4px;
+    }
 
-        .unit-value {
-            font-size: 4vw;
-            font-weight: bold;
-            margin: 10px 0;
-        }
+    .title-block .subtitle::before,
+    .title-block .subtitle::after {
+        content: "";
+        height: 2px;
+        width: 3vw;
+        background: var(--red);
+    }
 
-        .status {
-            font-size: 1.5vw;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
+    .title-block .subtitle span {
+        color: var(--red);
+        font-size: 1.35vw;
+        font-weight: 700;
+        letter-spacing: 3px;
+    }
 
-        .generating {
-            color: #35d07f;
-        }
+    .datetime-box {
+        background: var(--navy);
+        border-radius: 8px;
+        padding: 1vh 1.4vw;
+        text-align: center;
+        min-width: 12vw;
+    }
 
-        .shutdown {
-            color: #ff5b5b;
-        }
+    .datetime-box .dt-label {
+        color: #ffffff;
+        font-size: 0.85vw;
+        font-weight: 700;
+        letter-spacing: 2px;
+        opacity: 0.85;
+    }
 
-        .footer {
-            height: 10vh;
-            background: #0b1c31;
-            border-top: 2px solid #1f3b5d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 3vw;
-        }
+    .datetime-box .dt-date {
+        color: #ffffff;
+        font-size: 1.35vw;
+        font-weight: 700;
+        margin-top: 4px;
+    }
 
-        .system {
-            font-size: 1.3vw;
-            font-weight: bold;
-        }
+    .datetime-box .dt-time {
+        color: var(--red);
+        font-size: 1.35vw;
+        font-weight: 800;
+        margin-top: 2px;
+    }
 
-        .online {
-            color: #35d07f;
-        }
+    /* ---------- Section bar ---------- */
+    .section-bar {
+        background: var(--navy);
+        color: #ffffff;
+        text-align: center;
+        font-size: 1.3vw;
+        font-weight: 700;
+        letter-spacing: 2px;
+        padding: 1vh 0;
+        border-radius: 8px;
+    }
 
-        .offline {
-            color: #ff5b5b;
-        }
+    /* ---------- Units row ---------- */
+    .units-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5vw;
+    }
 
-        .update {
-            font-size: 1.2vw;
-            color: #a9bfd6;
-        }
+    .unit-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 1.4vh 1.5vw;
+        text-align: center;
+    }
 
-        .metrics {
-            grid-column: 1 / 3;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5vw;
-        }
+    .unit-card .unit-label {
+        font-size: 1.2vw;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--navy);
+        margin-bottom: 1vh;
+    }
 
-        .metric-value {
-            font-size: 2.4vw;
-            font-weight: bold;
-            margin-top: 8px;
-        }
-    </style>
+    .unit-value-box {
+        background: var(--navy);
+        border-radius: 8px;
+        padding: 1.6vh 0;
+    }
+
+    .unit-value-box .value {
+        color: #ffffff;
+        font-size: 3.4vw;
+        font-weight: 800;
+    }
+
+    .unit-status {
+        margin-top: 1vh;
+        font-size: 1vw;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .generating { color: var(--green); }
+    .shutdown { color: var(--red); }
+
+    /* ---------- Summary row ---------- */
+    .summary-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5vw;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        text-align: center;
+        padding: 1.6vh 1vw;
+    }
+
+    .summary-card .label {
+        font-size: 1.1vw;
+        font-weight: 700;
+        color: var(--navy);
+        letter-spacing: 1px;
+    }
+
+    .summary-card .big-value {
+        font-size: 4.4vw;
+        font-weight: 800;
+        color: var(--red);
+        margin-top: 0.6vh;
+    }
+
+    /* ---------- Metrics row ---------- */
+    .metrics-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5vw;
+        flex: 1;
+    }
+
+    .metric-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1vh;
+        gap: 0.6vh;
+    }
+
+    .metric-card .label {
+        font-size: 0.95vw;
+        font-weight: 700;
+        color: var(--navy);
+        letter-spacing: 1px;
+        text-align: center;
+    }
+
+    .metric-card .metric-value {
+        font-size: 1.9vw;
+        font-weight: 800;
+        color: var(--navy);
+    }
+
+    .metric-card .icon { width: 2.6vw; height: 2.6vw; margin-top: 4px; }
+    .metric-card .icon svg { width: 100%; height: 100%; }
+
+    .status-normal { color: var(--green); }
+    .status-alert { color: var(--red); }
+
+    /* ---------- Footer ---------- */
+    .footer {
+        background: var(--navy);
+        border-radius: 10px;
+        padding: 1.2vh 2vw;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .footer-item {
+        display: flex;
+        align-items: center;
+        gap: 0.7vw;
+        color: #ffffff;
+        font-size: 1vw;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .footer-item.system-ok { color: var(--green); }
+    .footer-item svg { width: 1.3vw; height: 1.3vw; }
+</style>
 </head>
-
 <body>
 
-<header class="header">
-    <h1>DADINKOWA HPP</h1>
-    <p>REAL TIME DISPLAY</p>
-</header>
+<div class="page">
 
-<main class="main">
+    <!-- Header -->
+    <div class="header">
+        <div class="brand">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.4"/>
+                    <ellipse cx="12" cy="12" rx="4" ry="9" stroke="white" stroke-width="1.4"/>
+                    <line x1="3" y1="12" x2="21" y2="12" stroke="white" stroke-width="1.4"/>
+                </svg>
+            </div>
+            <div class="brand-name">MABON<span>LIMITED</span></div>
+        </div>
 
-    <section class="card total">
-        <div class="label">TOTAL GENERATION</div>
-        <div class="total-value" id="totalPower">--.-- MW</div>
-    </section>
+        <div class="divider"></div>
 
-    <section class="unit-grid">
+        <div class="title-block">
+            <h1>DADINKOWA HPP</h1>
+            <div class="subtitle"><span>REAL TIME GENERATION BOARD</span></div>
+        </div>
 
-        <div class="card unit">
-            <div class="unit-name">UNIT 1</div>
-            <div class="unit-value" id="unit1Power">--.-- MW</div>
-            <div class="status generating" id="unit1Status">
-                CONNECTING...
+        <div class="datetime-box">
+            <div class="dt-label">DATE &amp; TIME</div>
+            <div class="dt-date" id="dtDate">--/--/----</div>
+            <div class="dt-time" id="dtTime">--:--:-- --</div>
+        </div>
+    </div>
+
+    <!-- Unit generation -->
+    <div class="section-bar">UNIT GENERATION (MW)</div>
+
+    <div class="units-row">
+        <div class="unit-card">
+            <div class="unit-label">UNIT 1</div>
+            <div class="unit-value-box"><div class="value" id="unit1Power">--.-</div></div>
+            <div class="unit-status generating" id="unit1Status">CONNECTING...</div>
+        </div>
+        <div class="unit-card">
+            <div class="unit-label">UNIT 2</div>
+            <div class="unit-value-box"><div class="value" id="unit2Power">--.-</div></div>
+            <div class="unit-status generating" id="unit2Status">CONNECTING...</div>
+        </div>
+    </div>
+
+    <!-- Total / capacity -->
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="label">TOTAL PLANT GENERATION (MW)</div>
+            <div class="big-value" id="totalPower">--.-</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">% AVAILABLE CAPACITY</div>
+            <div class="big-value" id="capacityPct">--.-%</div>
+        </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-row">
+        <div class="metric-card">
+            <div class="label">TOTAL INSTALLED CAPACITY</div>
+            <div class="metric-value" id="installedCapacity">40.0 MW</div>
+            <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 10L12 4L21 10V11H3V10Z" stroke="#0b2149" stroke-width="1.4" stroke-linejoin="round"/>
+                    <rect x="5" y="11" width="3" height="7" stroke="#0b2149" stroke-width="1.4"/>
+                    <rect x="10.5" y="11" width="3" height="7" stroke="#0b2149" stroke-width="1.4"/>
+                    <rect x="16" y="11" width="3" height="7" stroke="#0b2149" stroke-width="1.4"/>
+                    <path d="M2 20C4 18.5 6 21.5 8 20C10 18.5 12 21.5 14 20C16 18.5 18 21.5 20 20C21 19.3 22 20 22 20" stroke="#0b2149" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
             </div>
         </div>
 
-        <div class="card unit">
-            <div class="unit-name">UNIT 2</div>
-            <div class="unit-value" id="unit2Power">--.-- MW</div>
-            <div class="status generating" id="unit2Status">
-                CONNECTING...
-            </div>
-        </div>
-
-    </section>
-
-    <section class="metrics">
-
-        <div class="card">
+        <div class="metric-card">
             <div class="label">GRID FREQUENCY</div>
             <div class="metric-value" id="frequency">-- Hz</div>
+            <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 12H5L7 6L11 18L14 9L16 15L18 12H23" stroke="#0b2149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </div>
 
-        <div class="card">
+        <div class="metric-card">
             <div class="label">GRID VOLTAGE</div>
             <div class="metric-value" id="voltage">-- kV</div>
+            <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L4 9H9L6 22L20 10H14L17 2H12Z" stroke="#0b2149" stroke-width="1.3" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </div>
 
-        <div class="card">
-            <div class="label">UPSTREAM LEVEL</div>
-            <div class="metric-value" id="upstream">-- m</div>
+        <div class="metric-card">
+            <div class="label">PLANT STATUS</div>
+            <div class="metric-value status-normal" id="plantStatus">NORMAL</div>
+            <div class="icon" id="plantStatusIcon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="9" stroke="#2fae5c" stroke-width="1.6"/>
+                    <path d="M8 12.5L11 15.5L16 9.5" stroke="#2fae5c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </div>
-
-        <div class="card">
-            <div class="label">TAILRACE LEVEL</div>
-            <div class="metric-value" id="tailrace">-- m</div>
-        </div>
-
-    </section>
-
-</main>
-
-<footer class="footer">
-
-    <div class="system">
-        ● <span id="systemStatus" class="online">SYSTEM ONLINE</span>
     </div>
 
-    <div class="update">
-        Last Update: <span id="lastUpdate">--</span>
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-item system-ok" id="systemsFooter">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 5V11C20 16 16.5 20 12 22C7.5 20 4 16 4 11V5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12L11 14L15.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="systemStatus">ALL SYSTEMS OPERATIONAL</span>
+        </div>
+        <div class="footer-item">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <span>RELIABLE POWER</span>
+        </div>
+        <div class="footer-item">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20C4 12 10 4 20 4C20 14 12 20 4 20Z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M4 20C7 16 10 13 15 10" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span>SUSTAINABLE ENERGY</span>
+        </div>
     </div>
 
-</footer>
+</div>
 
 <script>
-
 const API_URL = "/api/telemetry";
+const INSTALLED_CAPACITY_MW = 40.0;
 
-async function updateDashboard() {
-
-    try {
-
-        const response = await fetch(API_URL);
-
-        if (!response.ok) {
-            throw new Error("HTTP error");
-        }
-
-        const data = await response.json();
-
-        const values = data.values;
-
-        document.getElementById("unit1Power").textContent =
-            values.UNIT1_ACTIVE_POWER_MW.toFixed(2) + " MW";
-
-        document.getElementById("unit2Power").textContent =
-            values.UNIT2_ACTIVE_POWER_MW.toFixed(2) + " MW";
-
-        document.getElementById("totalPower").textContent =
-            values.TOTAL_ACTIVE_POWER_MW.toFixed(2) + " MW";
-
-        document.getElementById("frequency").textContent =
-            values.GRID_FREQUENCY_HZ.toFixed(2) + " Hz";
-
-        document.getElementById("voltage").textContent =
-            values.GRID_VOLTAGE_KV.toFixed(2) + " kV";
-
-        document.getElementById("upstream").textContent =
-            values.UPSTREAM_LEVEL_M.toFixed(2) + " m";
-
-        document.getElementById("tailrace").textContent =
-            values.TAILRACE_LEVEL_M.toFixed(2) + " m";
-
-        updateStatus(
-            "unit1Status",
-            values.UNIT1_STATUS
-        );
-
-        updateStatus(
-            "unit2Status",
-            values.UNIT2_STATUS
-        );
-
-        const timestamp = new Date(data.timestamp_utc);
-
-        document.getElementById("lastUpdate").textContent =
-            timestamp.toLocaleTimeString();
-
-        document.getElementById("systemStatus").textContent =
-            "SYSTEM ONLINE";
-
-        document.getElementById("systemStatus").className =
-            "online";
-
-    } catch (error) {
-
-        document.getElementById("systemStatus").textContent =
-            "SYSTEM OFFLINE";
-
-        document.getElementById("systemStatus").className =
-            "offline";
-    }
+function updateClock() {
+    const now = new Date();
+    document.getElementById("dtDate").textContent =
+        now.toLocaleDateString("en-GB");
+    document.getElementById("dtTime").textContent =
+        now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
-
 
 function updateStatus(elementId, status) {
-
     const element = document.getElementById(elementId);
-
     element.textContent = status.toUpperCase();
+    element.className = "unit-status " + (status.toLowerCase() === "generating" ? "generating" : "shutdown");
+}
 
-    if (status.toLowerCase() === "generating") {
+async function updateDashboard() {
+    try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error("HTTP error");
 
-        element.className = "status generating";
+        const data = await response.json();
+        const v = data.values;
 
-    } else {
+        document.getElementById("unit1Power").textContent = v.UNIT1_ACTIVE_POWER_MW.toFixed(1);
+        document.getElementById("unit2Power").textContent = v.UNIT2_ACTIVE_POWER_MW.toFixed(1);
+        document.getElementById("totalPower").textContent = v.TOTAL_ACTIVE_POWER_MW.toFixed(1);
+        document.getElementById("frequency").textContent = v.GRID_FREQUENCY_HZ.toFixed(2) + " Hz";
+        document.getElementById("voltage").textContent = v.GRID_VOLTAGE_KV.toFixed(1) + " kV";
 
-        element.className = "status shutdown";
+        const capacityPct = (v.TOTAL_ACTIVE_POWER_MW / INSTALLED_CAPACITY_MW) * 100;
+        document.getElementById("capacityPct").textContent = capacityPct.toFixed(1) + "%";
+
+        updateStatus("unit1Status", v.UNIT1_STATUS);
+        updateStatus("unit2Status", v.UNIT2_STATUS);
+
+        const allNormal = v.UNIT1_STATUS.toLowerCase() === "generating" && v.UNIT2_STATUS.toLowerCase() === "generating";
+        const statusEl = document.getElementById("plantStatus");
+        statusEl.textContent = allNormal ? "NORMAL" : "ALERT";
+        statusEl.className = "metric-value " + (allNormal ? "status-normal" : "status-alert");
+
+        document.getElementById("systemStatus").textContent = "ALL SYSTEMS OPERATIONAL";
+        document.getElementById("systemsFooter").className = "footer-item system-ok";
+
+    } catch (error) {
+        document.getElementById("systemStatus").textContent = "SYSTEM OFFLINE";
+        document.getElementById("systemsFooter").className = "footer-item";
+        document.getElementById("systemsFooter").style.color = "#ff8a80";
     }
 }
 
+updateClock();
+setInterval(updateClock, 1000);
 
 updateDashboard();
-
 setInterval(updateDashboard, 2000);
-
 </script>
 
 </body>
