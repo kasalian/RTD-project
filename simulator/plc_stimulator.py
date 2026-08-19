@@ -9,7 +9,7 @@ import paho.mqtt.client as mqtt
 BROKER = "192.168.1.107"
 PORT = 1883
 TOPIC = "dadin_kowa/plc/data"
-PUBLISH_INTERVAL = 3
+PUBLISH_INTERVAL = 2
 
 # ============================================================
 # SIMULATION MODE
@@ -25,11 +25,11 @@ PUBLISH_INTERVAL = 3
 # ============================================================
 
 TEST_MODE = "NORMAL"
-VARIATION = 0.05
+VARIATION = 0.02
 
 
 def vary_value(nominal):
-    """Return a value randomly varied by +/- 5% from its nominal value."""
+    """Return a value randomly varied by +/- 2% from its nominal value."""
     variation = random.uniform(-VARIATION, VARIATION)
     return nominal * (1 + variation)
 
