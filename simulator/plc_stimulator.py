@@ -1,4 +1,5 @@
 import json
+import random
 import time
 from datetime import datetime, timezone
 
@@ -24,13 +25,20 @@ PUBLISH_INTERVAL = 3
 # ============================================================
 
 TEST_MODE = "NORMAL"
+VARIATION = 0.05
+
+
+def vary_value(nominal):
+    """Return a value randomly varied by +/- 5% from its nominal value."""
+    variation = random.uniform(-VARIATION, VARIATION)
+    return nominal * (1 + variation)
 
 
 def create_telemetry(sequence):
 
     # Normal operating values
-    unit1_mw = 17.20
-    unit2_mw = 17.05
+    unit1_mw = vary_value(18.50)
+    unit2_mw = vary_value(18.50)
 
     unit1_status = "Generating"
     unit2_status = "Generating"
@@ -90,16 +98,16 @@ def create_telemetry(sequence):
                 unit1_mw + unit2_mw,
 
             "UPSTREAM_LEVEL_M":
-                243.31,
+                vary_value(245.06),
 
             "TAILRACE_LEVEL_M":
-                215.30,
+                vary_value(215.78),
 
             "GRID_FREQUENCY_HZ":
-                50.00,
+                vary_value(50.00),
 
             "GRID_VOLTAGE_KV":
-                132.00,
+                vary_value(132.00),
 
             "UNIT1_STATUS":
                 unit1_status,
@@ -127,6 +135,7 @@ def main():
     print(f"MQTT Topic  : {TOPIC}")
     print(f"Interval    : {PUBLISH_INTERVAL} seconds")
     print(f"TEST MODE   : {TEST_MODE}")
+    print(f"Variation   : +/- {VARIATION * 100:.0f}%")
     print("Press Ctrl+C to stop.")
     print()
 
