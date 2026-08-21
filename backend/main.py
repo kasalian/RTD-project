@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 import paho.mqtt.client as mqtt
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 import uvicorn
 
 
@@ -88,6 +89,13 @@ def health():
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
+@app.get("/display")
+def display():
+    return FileResponse("dashboard/index.html")
+
+@app.get("/display/mabon-logo.png")
+def mabon_logo():
+    return FileResponse("dashboard/mabon-logo.png")
 
 if __name__ == "__main__":
     uvicorn.run(
