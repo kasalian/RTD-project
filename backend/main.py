@@ -8,9 +8,13 @@ from fastapi.responses import FileResponse
 import uvicorn
 
 
-MQTT_BROKER = "192.168.1.107"
-MQTT_PORT = 1883
+MQTT_BROKER = "136.116.243.175"
+MQTT_PORT = 8883
 MQTT_TOPIC = "dadin_kowa/plc/data"
+MQTT_USERNAME = "rtd_dadinkowa"
+MQTT_PASSWORD = "Dadinkowa@2026"
+
+MQTT_CA_CERT = "/etc/mosquitto/certs/ca.crt"
 
 app = FastAPI(title="Dadinkowa RTD Backend")
 
@@ -53,6 +57,8 @@ mqtt_client.on_message = on_message
 
 @app.on_event("startup")
 def startup_event():
+    mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    mqtt_client.tls_set(ca_certs=MQTT_CA_CERT)
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
     mqtt_client.loop_start()
     print("RTD backend started")

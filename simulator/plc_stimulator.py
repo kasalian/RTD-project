@@ -10,9 +10,14 @@ import paho.mqtt.client as mqtt
 # MQTT CONFIGURATION
 # ============================================================
 
-BROKER = "192.168.1.107"
-PORT = 1883
+BROKER = "34.42.106.129"
+PORT = 8883
+TLS: enabled
+#CA: D:\RTD-project\certs\ca.crt
 TOPIC = "dadin_kowa/plc/data"
+
+USERNAME = "rtd_dadinkowa"
+PASSWORD = "Dadinkowa@2026"
 
 PUBLISH_INTERVAL = 2
 
@@ -72,8 +77,8 @@ def create_telemetry(sequence):
     # Normal operating values
     # --------------------------------------------------------
 
-    unit1_mw = vary_value(18.50)
-    unit2_mw = vary_value(18.50)
+    unit1_mw = vary_value(20.00)
+    unit2_mw = vary_value(20.00)
 
     unit1_status = "Generating"
     unit2_status = "Generating"
@@ -160,10 +165,10 @@ def create_telemetry(sequence):
                 unit1_mw + unit2_mw,
 
             "UPSTREAM_LEVEL_M":
-                vary_value(245.06),
+                vary_value(246.56),
 
             "TAILRACE_LEVEL_M":
-                vary_value(215.78),
+                vary_value(215.15),
 
             "GRID_FREQUENCY_HZ":
                 vary_value(50.00),
@@ -194,6 +199,12 @@ def main():
         mqtt.CallbackAPIVersion.VERSION2,
         client_id="rtd_plc_simulator"
     )
+
+    client.username_pw_set(USERNAME, PASSWORD)
+    client.tls_set(
+    ca_certs=r"D:\RTD-project\certs\ca.crt"
+)
+
 
 
     # --------------------------------------------------------
