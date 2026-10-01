@@ -1,3 +1,7 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
 import json
 import random
 import time
@@ -5,22 +9,38 @@ from datetime import datetime, timezone
 
 import paho.mqtt.client as mqtt
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = BASE_DIR / ".env"
+
+# Load environment variables
+load_dotenv(ENV_FILE)
+
 
 # ============================================================
 # MQTT CONFIGURATION
 # ============================================================
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
 
-BROKER = "34.42.106.129"
-PORT = 8883
-TLS: enabled
-#CA: D:\RTD-project\certs\ca.crt
-TOPIC = "dadin_kowa/plc/data"
+required_vars = {
+    "MQTT_BROKER": MQTT_BROKER,
+    "MQTT_TOPIC": MQTT_TOPIC,
+    "MQTT_USERNAME": MQTT_USERNAME,
+    "MQTT_PASSWORD": MQTT_PASSWORD,
+}
 
-USERNAME = "rtd_dadinkowa"
-PASSWORD = "Dadinkowa@2026"
+missing = [name for name, value in required_vars.items() if not value]
+
+if missing:
+    raise RuntimeError(
+        f"Missing environment variables: {', '.join(missing)}"
+    )
+
 
 PUBLISH_INTERVAL = 2
-
 
 # ============================================================
 # SIMULATION MODE
@@ -200,10 +220,11 @@ def main():
         client_id="rtd_plc_simulator"
     )
 
-    client.username_pw_set(USERNAME, PASSWORD)
-    client.tls_set(
-    ca_certs=r"D:\RTD-project\certs\ca.crt"
-)
+    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    
+#     client.tls_set(
+#     ca_certs=r"D:\RTD-project\certs\ca.crt"
+# )
 
 
 
@@ -218,11 +239,11 @@ def main():
         print("======================================")
 
         print(
-            f"MQTT Broker : {BROKER}:{PORT}"
+            f"MQTT Broker : {MQTT_BROKER}:{MQTT_PORT}"
         )
 
         print(
-            f"MQTT Topic  : {TOPIC}"
+            f"MQTT Topic  : {MQTT_TOPIC}"
         )
 
         print(
@@ -245,8 +266,8 @@ def main():
 
 
         client.connect(
-            BROKER,
-            PORT,
+            MQTT_BROKER,
+            MQTT_PORT,
             60
         )
 
@@ -316,7 +337,7 @@ def main():
             # ------------------------------------------------
 
             result = client.publish(
-                TOPIC,
+                MQTT_TOPIC,
                 payload,
                 qos=1
             )

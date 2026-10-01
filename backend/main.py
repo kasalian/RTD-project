@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+
 import json
 import threading
 from datetime import datetime, timezone
@@ -7,19 +10,32 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 import uvicorn
 
-
-MQTT_BROKER = "136.116.243.175"
-MQTT_PORT = 8883
-MQTT_TOPIC = "dadin_kowa/plc/data"
-MQTT_USERNAME = "rtd_dadinkowa"
-MQTT_PASSWORD = "Dadinkowa@2026"
-
-MQTT_CA_CERT = "/etc/mosquitto/certs/ca.crt"
-
+load_dotenv()
 app = FastAPI(title="Dadinkowa RTD Backend")
 
 latest_data = {}
 data_lock = threading.Lock()
+
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
+
+
+required_vars = {
+    "MQTT_BROKER": MQTT_BROKER,
+    "MQTT_TOPIC": MQTT_TOPIC,
+    "MQTT_USERNAME": MQTT_USERNAME,
+    "MQTT_PASSWORD": MQTT_PASSWORD,
+}
+
+missing = [name for name, value in required_vars.items() if not value]
+
+if missing:
+    raise RuntimeError(
+        f"Missing environment variables: {', '.join(missing)}"
+    )
 
 
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -58,7 +74,7 @@ mqtt_client.on_message = on_message
 @app.on_event("startup")
 def startup_event():
     mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-    mqtt_client.tls_set(ca_certs=MQTT_CA_CERT)
+    # mqtt_client.tls_set(ca_certs=MQTT_CA_CERT)
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
     mqtt_client.loop_start()
     print("RTD backend started")
