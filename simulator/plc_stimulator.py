@@ -204,7 +204,6 @@ def create_telemetry(sequence):
         }
     }
 
-
 # ============================================================
 # MAIN
 # ============================================================
@@ -220,13 +219,32 @@ def main():
         client_id="rtd_plc_simulator"
     )
 
-    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-    
-#     client.tls_set(
-#     ca_certs=r"D:\RTD-project\certs\ca.crt"
-# )
+    client.username_pw_set(
+        MQTT_USERNAME,
+        MQTT_PASSWORD
+    )
 
+    # --------------------------------------------------------
+    # MQTT callbacks
+    # --------------------------------------------------------
 
+    def on_connect(client, userdata, flags, reason_code, properties):
+        if reason_code == 0:
+            print("MQTT connected successfully.")
+        else:
+            print(
+                f"MQTT connection failed. "
+                f"Reason code: {reason_code}"
+            )
+
+    def on_disconnect(client, userdata, disconnect_flags, reason_code, properties):
+        print(
+            f"MQTT disconnected. "
+            f"Reason code: {reason_code}"
+        )
+
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
 
     # --------------------------------------------------------
     # Connect to MQTT broker
@@ -264,15 +282,35 @@ def main():
 
         print()
 
-
         client.connect(
             MQTT_BROKER,
             MQTT_PORT,
             60
         )
 
+        # Start MQTT network loop
         client.loop_start()
 
+        # ----------------------------------------------------
+        # Wait for actual MQTT connection
+        # ----------------------------------------------------
+
+        print("Waiting for MQTT connection...")
+
+        timeout = time.time() + 10
+
+        while not client.is_connected():
+
+            if time.time() > timeout:
+
+                raise RuntimeError(
+                    "MQTT broker connection timed out."
+                )
+
+            time.sleep(0.1)
+
+        print("MQTT connection established.")
+        print()
 
     except Exception as e:
 
@@ -282,27 +320,47 @@ def main():
 
         return
 
-
     # --------------------------------------------------------
     # Sequence counter
     # --------------------------------------------------------
 
     sequence = 1
 
-
     try:
 
         while True:
 
             # =================================================
-            # COMMUNICATION LOST MODE
+            # CHECK MQTT CONNECTION
             # =================================================
-            #
-            # Do NOT publish telemetry.
-            #
-            # The last telemetry message remains in the
-            # backend, allowing the backend/dashboard to
-            # determine that the data has become stale.
+
+            if not client.is_connected():
+
+                print(
+                    "MQTT connection lost. "
+                    "Attempting to reconnect..."
+                )
+
+                try:
+
+                    client.reconnect()
+
+                    print(
+                        "MQTT reconnected successfully."
+                    )
+
+                except Exception as e:
+
+                    print(
+                        f"MQTT reconnect failed: {e}"
+                    )
+
+                    time.sleep(5)
+
+                    continue
+
+            # =================================================
+            # COMMUNICATION LOST MODE
             # =================================================
 
             if TEST_MODE == "COMMUNICATION_LOST":
@@ -318,9 +376,8 @@ def main():
 
                 continue
 
-
             # =================================================
-            # NORMAL / UNIT SHUTDOWN MODES
+            # CREATE TELEMETRY
             # =================================================
 
             telemetry = create_telemetry(
@@ -331,10 +388,9 @@ def main():
                 telemetry
             )
 
-
-            # ------------------------------------------------
-            # Publish telemetry
-            # ------------------------------------------------
+            # =================================================
+            # PUBLISH TELEMETRY
+            # =================================================
 
             result = client.publish(
                 MQTT_TOPIC,
@@ -342,9 +398,8 @@ def main():
                 qos=1
             )
 
-
             # ------------------------------------------------
-            # Display result
+            # Check publish result
             # ------------------------------------------------
 
             if result.rc == mqtt.MQTT_ERR_SUCCESS:
@@ -374,7 +429,6 @@ def main():
 
                 )
 
-
             else:
 
                 print(
@@ -385,29 +439,25 @@ def main():
 
                 )
 
-
             # ------------------------------------------------
             # Increment sequence
             # ------------------------------------------------
 
             sequence += 1
 
-
             # ------------------------------------------------
-            # Wait before next telemetry
+            # Wait
             # ------------------------------------------------
 
             time.sleep(
                 PUBLISH_INTERVAL
             )
 
-
     except KeyboardInterrupt:
 
         print(
             "\nSimulator stopped."
         )
-
 
     finally:
 
@@ -418,7 +468,6 @@ def main():
         print(
             "MQTT connection closed."
         )
-
 
 # ============================================================
 # PROGRAM ENTRY POINT
